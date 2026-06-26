@@ -3,98 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TypeRush Pro</title>
+    <title>Typing Rush</title>
     <style>
         :root {
-            --bg-color: #323437;
-            --main-color: #e2b714;
-            --caret-color: #e2b714;
-            --sub-color: #646669;
-            --text-color: #d1d0c5;
-            --error-color: #ca4754;
+            --bg-color: #1e1e24;
+            --card-bg: #2a2b36;
+            --main-color: #ffb703;
+            --caret-color: #ffb703;
+            --sub-color: #7678ed;
+            --muted-text: #6c757d;
+            --text-color: #f8f9fa;
+            --error-color: #ef233c;
+            --correct-color: #38b000;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 24px;
             box-sizing: border-box;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 850px;
             width: 100%;
-            text-align: center;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
         }
 
-        /* Top Config Dashboard: Best Score & Difficulty Controls */
+        /* Game Title Styling */
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0 auto 0.5rem auto;
+            color: var(--text-color);
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .game-title span {
+            color: var(--main-color);
+            position: relative;
+        }
+
+        /* Modernized Header Dashboard Card */
         .dashboard {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.15);
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            gap: 1rem;
+            background: var(--card-bg);
+            padding: 1.25rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            gap: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .best-score-badge {
             font-size: 1.1rem;
-            color: var(--text-color);
+            letter-spacing: 0.5px;
+            color: #ced4da;
         }
-        .best-score-badge span {
+        
+        .best-score-badge span#pb-display {
             color: var(--main-color);
-            font-weight: bold;
+            font-weight: 700;
+            background: rgba(255, 183, 3, 0.1);
+            padding: 4px 10px;
+            border-radius: 8px;
+            margin-left: 5px;
+        }
+
+        .difficulty-container {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px;
+            border-radius: 12px;
+            display: flex;
+            gap: 4px;
         }
 
         .difficulty-container button {
             background: transparent;
             border: none;
-            color: var(--sub-color);
+            color: var(--muted-text);
             cursor: pointer;
             font-family: inherit;
-            font-size: 1rem;
-            padding: 0.2rem 0.6rem;
-            transition: color 0.2s ease;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .difficulty-container button.active {
-            color: var(--main-color);
-            font-weight: bold;
+        
+        .difficulty-container button:hover {
+            color: var(--text-color);
         }
 
-        /* Real-time stats row */
+        .difficulty-container button.active {
+            color: var(--bg-color);
+            background-color: var(--main-color);
+            box-shadow: 0 4px 12px rgba(255, 183, 3, 0.3);
+        }
+
+        /* Real-time metrics counters */
         #stats-container {
             display: flex;
             justify-content: center;
-            gap: 3rem;
-            font-size: 1.5rem;
-            color: var(--sub-color);
+            gap: 4rem;
+            margin: 0.5rem 0;
         }
-        .stat .highlight {
-            color: var(--main-color);
-            font-weight: bold;
+        
+        .stat {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted-text);
+            font-weight: 700;
+            text-align: center;
         }
 
+        .stat .highlight {
+            display: block;
+            font-size: 2.5rem;
+            color: var(--text-color);
+            font-family: 'Courier New', monospace;
+            margin-top: 4px;
+            transition: color 0.2s;
+        }
+
+        /* Premium Text Arena Box */
         #words-wrapper {
             position: relative;
-            font-size: 1.8rem;
-            line-height: 2.6rem;
-            min-height: 120px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2.1rem;
+            line-height: 3.2rem;
+            min-height: 140px;
             word-break: break-word;
             text-align: left;
             user-select: none;
             outline: none;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
         #hidden-input {
@@ -104,83 +169,136 @@
         }
 
         .char {
-            color: var(--sub-color);
+            color: #565869;
             position: relative;
+            transition: color 0.1s ease;
         }
+        
         .char.correct {
             color: var(--text-color);
         }
+        
         .char.incorrect {
             color: var(--error-color);
-            background-color: rgba(202, 71, 84, 0.15);
+            background-color: rgba(239, 35, 60, 0.15);
+            border-radius: 4px;
         }
 
-        /* Caret Line styling */
+        /* Cursor line accent marker */
         .char.current::before {
             content: '';
             position: absolute;
             left: 0;
-            bottom: 0;
-            width: 2px;
-            height: 100%;
+            bottom: -2px;
+            width: 3px;
+            height: 110%;
             background-color: var(--caret-color);
-            animation: blink 1s infinite;
+            border-radius: 2px;
+            animation: pulseCaret 1s infinite;
+            box-shadow: 0 0 8px var(--caret-color);
         }
-        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes pulseCaret { 50% { opacity: 0.2; } }
 
-        /* End Screen Grid Container */
+        /* End Score Summary Frame */
         #results {
             display: none;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 2rem;
-            border-radius: 8px;
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            animation: fadeIn 0.4s ease-out;
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         #results h2 {
             color: var(--main-color);
             margin-top: 0;
-            font-size: 2rem;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            font-weight: 700;
         }
+        
         .results-grid {
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
-            gap: 1.5rem;
-            font-size: 1.6rem;
+            gap: 2rem;
+        }
+        
+        .res-card {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            min-width: 120px;
+        }
+        
+        .res-card label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--muted-text);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .res-card val {
+            font-size: 2.2rem;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
         }
 
+        /* Action Buttons */
         #restart-btn {
             background-color: transparent;
-            border: 2px solid var(--sub-color);
-            color: var(--sub-color);
-            padding: 0.6rem 2rem;
+            border: 2px solid #4a4b59;
+            color: #ced4da;
+            padding: 0.8rem 2.5rem;
             font-size: 1rem;
-            border-radius: 6px;
+            font-weight: 600;
+            border-radius: 12px;
             cursor: pointer;
             font-family: inherit;
             align-self: center;
             transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+        
         #restart-btn:hover {
             color: var(--bg-color);
             background-color: var(--text-color);
             border-color: var(--text-color);
+            transform: translateY(-1px);
+        }
+        
+        #restart-btn:active {
+            transform: translateY(1px);
         }
 
         /* Responsive Breakpoints */
-        @media (max-width: 600px) {
-            #words-wrapper { font-size: 1.4rem; line-height: 2.1rem; min-height: 90px; }
-            #stats-container { font-size: 1.2rem; gap: 1.5rem; }
-            .dashboard { flex-direction: column; text-align: center; }
-            .results-grid { flex-direction: column; font-size: 1.3rem; gap: 0.8rem; }
+        @media (max-width: 650px) {
+            .game-title { font-size: 1.8rem; }
+            #words-wrapper { font-size: 1.5rem; line-height: 2.4rem; min-height: 110px; padding: 1.25rem; }
+            #stats-container { gap: 1.5rem; }
+            .stat .highlight { font-size: 1.8rem; }
+            .dashboard { flex-direction: column; text-align: center; padding: 1rem; }
+            .results-grid { flex-direction: column; gap: 1rem; }
+            .res-card { padding: 0.75rem; }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <h1 class="game-title">Typing<span>Rush</span></h1>
+
         <div class="dashboard">
             <div class="best-score-badge">
-                Personal Best (<span id="pb-diff-label">Easy</span>): <span id="pb-display">0 WPM</span>
+                Personal Best (<span id="pb-diff-label" style="font-weight:600;">Easy</span>): <span id="pb-display">0 WPM</span>
             </div>
             <div class="difficulty-container">
                 <button id="btn-easy" class="active" onclick="changeDifficulty('easy')">Easy</button>
@@ -190,8 +308,8 @@
         </div>
 
         <div id="stats-container">
-            <div class="stat">Timer: <span id="live-timer" class="highlight">0.0s</span></div>
-            <div class="stat">Live WPM: <span id="live-wpm" class="highlight">0</span></div>
+            <div class="stat">Timer<span id="live-timer" class="highlight">0.0s</span></div>
+            <div class="stat">Live WPM<span id="live-wpm" class="highlight">0</span></div>
         </div>
 
         <input type="text" id="hidden-input" autofocus autocomplete="off" autocapitalize="none">
@@ -200,9 +318,18 @@
         <div id="results">
             <h2>Round Finished!</h2>
             <div class="results-grid">
-                <div>WPM: <span id="res-wpm" style="color: var(--main-color);">0</span></div>
-                <div>Accuracy: <span id="res-acc" style="color: var(--main-color);">0%</span></div>
-                <div>Time: <span id="res-time" style="color: var(--main-color);">0s</span></div>
+                <div class="res-card">
+                    <label>WPM</label>
+                    <val id="res-wpm" style="color: var(--main-color);">0</val>
+                </div>
+                <div class="res-card">
+                    <label>Accuracy</label>
+                    <val id="res-acc" style="color: #38b000;">0%</val>
+                </div>
+                <div class="res-card">
+                    <label>Time</label>
+                    <val id="res-time" style="color: #7678ed;">0s</val>
+                </div>
             </div>
         </div>
 
@@ -210,7 +337,6 @@
     </div>
 
     <script>
-        // Divided Library Lists (30-120 Characters)
         const difficultyLibraries = {
             easy: [
                 "The quick brown fox jumps over the lazy dog.",
@@ -255,7 +381,6 @@
         const pbDisplay = document.getElementById('pb-display');
         const pbDiffLabel = document.getElementById('pb-diff-label');
 
-        // High Score Processing System
         function updateHighScoreDisplay() {
             const savedPB = localStorage.getItem(`typerush_pb_${currentDifficulty}`) || 0;
             pbDiffLabel.innerText = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
@@ -375,7 +500,6 @@
             resTime.innerText = `${finalTimeSeconds}s`;
             resultsDiv.style.display = "block";
 
-            // Process and commit to database if it beats old high score
             saveHighScore(finalWpm);
         }
 
@@ -386,7 +510,6 @@
             }
         });
 
-        // Initialize display and setup the base layout
         updateHighScoreDisplay();
         initGame();
     </script>
