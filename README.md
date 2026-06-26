@@ -13,6 +13,11 @@ A minimalist, high-performance web-based typing speed application inspired by Mo
 - **Fully Responsive & Fluid UX:** Designed from scratch using a system layout breakpoint system matching desktop, tablet, and mobile (Mac/Safari, Windows, iOS, Android) viewpoints cleanly.
 
 ---
+---
+
+
+
+
 
 ## 📁 Project Architecture
 
@@ -22,6 +27,8 @@ The deployment architecture is fully self-contained inside a cross-browser secur
 📁 typing-rush/
    └── 📄 index.html      # Standard Layout structure, style configurations, and game engine.
 
+
+demo link : https://monkeylike.netlify.app
 
 
                                     Prompts
