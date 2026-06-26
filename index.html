@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeRush Clone</title>
+    <style>
+        :root {
+            --bg-color: #323437;
+            --main-color: #e2b714;
+            --caret-color: #e2b714;
+            --sub-color: #646669;
+            --text-color: #d1d0c5;
+            --error-color: #ca4754;
+            --correct-color: #e2b714;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+        }
+
+        #stats-container {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.5rem;
+            color: var(--sub-color);
+            margin-bottom: 2rem;
+            transition: color 0.3s;
+        }
+
+        .stat highlight {
+            color: var(--main-color);
+            font-weight: bold;
+        }
+
+        #words-wrapper {
+            position: relative;
+            font-size: 1.8rem;
+            line-height: 2.4rem;
+            height: auto;
+            min-height: 100px;
+            word-break: break-word;
+            text-align: left;
+            user-select: none;
+            margin-bottom: 2rem;
+        }
+
+        /* Hidden input to capture keystrokes on mobile/desktop */
+        #hidden-input {
+            position: absolute;
+            opacity: 0;
+            z-index: -1;
+        }
+
+        .char {
+            color: var(--sub-color);
+            position: relative;
+            transition: all 0.1s ease;
+        }
+
+        .char.correct {
+            color: var(--text-color);
+        }
+
+        .char.incorrect {
+            color: var(--error-color);
+            background-color: rgba(202, 71, 84, 0.2);
+        }
+
+        /* Caret/Cursor styling */
+        .char.current::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 2px;
+            height: 100%;
+            background-color: var(--caret-color);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        #results {
+            display: none;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        #results h2 {
+            color: var(--main-color);
+            margin-top: 0;
+        }
+
+        .results-grid {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.8rem;
+        }
+
+        #restart-btn {
+            background-color: transparent;
+            border: 2px solid var(--sub-color);
+            color: var(--sub-color);
+            padding: 0.5rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        #restart-btn:hover {
+            color: var(--bg-color);
+            background-color: var(--text-color);
+            border-color: var(--text-color);
+        }
+
+        #restart-btn:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="stats-container">
+            <div class="stat">Timer: <span id="live-timer" class="highlight">0.0s</span></div>
+            <div class="stat">Live WPM: <span id="live-wpm" class="highlight">0</span></div>
+        </div>
+
+        <input type="text" id="hidden-input" autofocus autocomplete="off" autocapitalize="none">
+
+        <div id="words-wrapper"></div>
+
+        <div id="results">
+            <h2>Resultados</h2>
+            <div class="results-grid">
+                <div>WPM: <span id="res-wpm" style="color: var(--main-color);">0</span></div>
+                <div>Accuracy: <span id="res-acc" style="color: var(--main-color);">0%</span></div>
+                <div>Time: <span id="res-time" style="color: var(--main-color);">0s</span></div>
+            </div>
+        </div>
+
+        <button id="restart-btn">Restart (or press Enter)</button>
+    </div>
+
+    <script>
+        // Library of 5 texts between 30 and 120 characters
+        const textLibrary = [
+            "The quick brown fox jumps over the lazy dog.",
+            "Code is like humor. When you have to explain it, it is bad.",
+            "Simplicity is the soul of efficiency.",
+            "Fix the cause, not the symptom.",
+            "Before software can be reusable it first has to be usable."
+        ];
+
+        const wordsWrapper = document.getElementById('words-wrapper');
+        const hiddenInput = document.getElementById('hidden-input');
+        const liveTimer = document.getElementById('live-timer');
+        const liveWpm = document.getElementById('live-wpm');
+        const resultsDiv = document.getElementById('results');
+        const resWpm = document.getElementById('res-wpm');
+        const resAcc = document.getElementById('res-acc');
+        const resTime = document.getElementById('res-time');
+        const restartBtn = document.getElementById('restart-btn');
+
+        let currentText = "";
+        let startTime = null;
+        let timerInterval = null;
+        let isTracking = false;
+        let totalErrors = 0;
+        let totalTyped = 0;
+
+        // Initialize/Restart Game
+        function initGame() {
+            // Reset States
+            clearInterval(timerInterval);
+            timerInterval = null;
+            startTime = null;
+            isTracking = false;
+            totalErrors = 0;
+            totalTyped = 0;
+            
+            liveTimer.innerText = "0.0s";
+            liveWpm.innerText = "0";
+            resultsDiv.style.display = "none";
+            wordsWrapper.style.display = "block";
+            hiddenInput.value = "";
+            hiddenInput.disabled = false;
+
+            // Pick random text
+            const randomIndex = Math.floor(Math.random() * textLibrary.length);
+            currentText = textLibrary[randomIndex];
+
+            // Render text as individual character spans
+            wordsWrapper.innerHTML = currentText.split('').map((char, index) => {
+                // Highlight the very first character with the caret
+                const currentClass = index === 0 ? 'char current' : 'char';
+                return `<span class="${currentClass}">${char}</span>`;
+            }).join('');
+
+            // Focus hidden input so user can type instantly
+            hiddenInput.focus();
+        }
+
+        // Keep input focused when clicking on the game area
+        window.addEventListener('click', () => hiddenInput.focus());
+
+        // Process Input
+        hiddenInput.addEventListener('input', (e) => {
+            const inputValue = hiddenInput.value;
+            const inputLength = inputValue.length;
+            const textSpans = wordsWrapper.querySelectorAll('.char');
+
+            // Start timer on first keystroke
+            if (!isTracking && inputLength > 0) {
+                isTracking = true;
+                startTime = performance.now();
+                timerInterval = setInterval(updateStats, 100);
+            }
+
+            totalTyped++; // Track raw keystrokes for accurate metrics
+
+            // Update character classes based on correct/incorrect inputs
+            textSpans.forEach((span, index) => {
+                span.classList.remove('current', 'correct', 'incorrect');
+
+                if (index < inputLength) {
+                    // Character typed
+                    if (inputValue[index] === currentText[index]) {
+                        span.classList.add('correct');
+                    } else {
+                        span.classList.add('incorrect');
+                        // Track mistakes once per position loop to avoid bloat
+                        if (index === inputLength - 1 && e.inputType !== "deleteContentBackward") {
+                            totalErrors++;
+                        }
+                    }
+                }
+
+                // Apply caret to the next character to be typed
+                if (index === inputLength) {
+                    span.classList.add('current');
+                }
+            });
+
+            // Check if user finished the text
+            if (inputLength >= currentText.length) {
+                endGame();
+            }
+        });
+
+        // Calculate and Update Real-time Statistics
+        function updateStats() {
+            if (!startTime) return;
+            const currentTime = performance.now();
+            const timeElapsed = (currentTime - startTime) / 1000; // in seconds
+            liveTimer.innerText = `${timeElapsed.toFixed(1)}s`;
+
+            // Standard WPM formula: (correct characters / 5) / time in minutes
+            const correctChars = wordsWrapper.querySelectorAll('.char.correct').length;
+            const minutes = timeElapsed / 60;
+            if (minutes > 0) {
+                const wpm = Math.round((correctChars / 5) / minutes);
+                liveWpm.innerText = wpm;
+            }
+        }
+
+        // End Game and Calculate Precision Stats
+        function endGame() {
+            clearInterval(timerInterval);
+            hiddenInput.disabled = true;
+
+            const endTime = performance.now();
+            const finalTimeSeconds = ((endTime - startTime) / 1000).toFixed(2);
+            
+            const correctChars = wordsWrapper.querySelectorAll('.char.correct').length;
+            const finalWpm = Math.round((correctChars / 5) / (finalTimeSeconds / 60));
+
+            // Accuracy calculation based on net correct characters vs total length
+            const accuracy = Math.max(0, Math.round((correctChars / currentText.length) * 100));
+
+            // Display Results
+            wordsWrapper.style.display = "none";
+            resWpm.innerText = finalWpm;
+            resAcc.innerText = `${accuracy}%`;
+            resTime.innerText = `${finalTimeSeconds}s`;
+            resultsDiv.style.display = "block";
+        }
+
+        // Restart buttons & shortcuts
+        restartBtn.addEventListener('click', initGame);
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                initGame();
+            }
+        });
+
+        // Start the game on initial load
+        initGame();
+    </script>
+</body>
+</html>
