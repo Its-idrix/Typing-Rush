@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TypeRush Clone</title>
+    <title>TypeRush Pro</title>
     <style>
         :root {
             --bg-color: #323437;
@@ -12,7 +12,6 @@
             --sub-color: #646669;
             --text-color: #d1d0c5;
             --error-color: #ca4754;
-            --correct-color: #e2b714;
         }
 
         body {
@@ -23,27 +22,66 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .container {
             max-width: 800px;
-            width: 90%;
+            width: 100%;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
+        /* Top Config Dashboard: Best Score & Difficulty Controls */
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            gap: 1rem;
+        }
+
+        .best-score-badge {
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+        .best-score-badge span {
+            color: var(--main-color);
+            font-weight: bold;
+        }
+
+        .difficulty-container button {
+            background: transparent;
+            border: none;
+            color: var(--sub-color);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 0.2rem 0.6rem;
+            transition: color 0.2s ease;
+        }
+        .difficulty-container button.active {
+            color: var(--main-color);
+            font-weight: bold;
+        }
+
+        /* Real-time stats row */
         #stats-container {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
+            gap: 3rem;
             font-size: 1.5rem;
             color: var(--sub-color);
-            margin-bottom: 2rem;
-            transition: color 0.3s;
         }
-
-        .stat highlight {
+        .stat .highlight {
             color: var(--main-color);
             font-weight: bold;
         }
@@ -51,16 +89,14 @@
         #words-wrapper {
             position: relative;
             font-size: 1.8rem;
-            line-height: 2.4rem;
-            height: auto;
-            min-height: 100px;
+            line-height: 2.6rem;
+            min-height: 120px;
             word-break: break-word;
             text-align: left;
             user-select: none;
-            margin-bottom: 2rem;
+            outline: none;
         }
 
-        /* Hidden input to capture keystrokes on mobile/desktop */
         #hidden-input {
             position: absolute;
             opacity: 0;
@@ -70,19 +106,16 @@
         .char {
             color: var(--sub-color);
             position: relative;
-            transition: all 0.1s ease;
         }
-
         .char.correct {
             color: var(--text-color);
         }
-
         .char.incorrect {
             color: var(--error-color);
-            background-color: rgba(202, 71, 84, 0.2);
+            background-color: rgba(202, 71, 84, 0.15);
         }
 
-        /* Caret/Cursor styling */
+        /* Caret Line styling */
         .char.current::before {
             content: '';
             position: absolute;
@@ -93,68 +126,79 @@
             background-color: var(--caret-color);
             animation: blink 1s infinite;
         }
+        @keyframes blink { 50% { opacity: 0; } }
 
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-
+        /* End Screen Grid Container */
         #results {
             display: none;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.25);
             padding: 2rem;
             border-radius: 8px;
-            margin-top: 1rem;
         }
-
         #results h2 {
             color: var(--main-color);
             margin-top: 0;
+            font-size: 2rem;
         }
-
         .results-grid {
             display: flex;
             justify-content: space-around;
-            font-size: 1.8rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 1.6rem;
         }
 
         #restart-btn {
             background-color: transparent;
             border: 2px solid var(--sub-color);
             color: var(--sub-color);
-            padding: 0.5rem 1.5rem;
+            padding: 0.6rem 2rem;
             font-size: 1rem;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            margin-top: 1.5rem;
             font-family: inherit;
+            align-self: center;
             transition: all 0.2s ease;
         }
-
         #restart-btn:hover {
             color: var(--bg-color);
             background-color: var(--text-color);
             border-color: var(--text-color);
         }
 
-        #restart-btn:focus {
-            outline: none;
+        /* Responsive Breakpoints */
+        @media (max-width: 600px) {
+            #words-wrapper { font-size: 1.4rem; line-height: 2.1rem; min-height: 90px; }
+            #stats-container { font-size: 1.2rem; gap: 1.5rem; }
+            .dashboard { flex-direction: column; text-align: center; }
+            .results-grid { flex-direction: column; font-size: 1.3rem; gap: 0.8rem; }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div class="dashboard">
+            <div class="best-score-badge">
+                Personal Best (<span id="pb-diff-label">Easy</span>): <span id="pb-display">0 WPM</span>
+            </div>
+            <div class="difficulty-container">
+                <button id="btn-easy" class="active" onclick="changeDifficulty('easy')">Easy</button>
+                <button id="btn-medium" onclick="changeDifficulty('medium')">Medium</button>
+                <button id="btn-hard" onclick="changeDifficulty('hard')">Hard</button>
+            </div>
+        </div>
+
         <div id="stats-container">
             <div class="stat">Timer: <span id="live-timer" class="highlight">0.0s</span></div>
             <div class="stat">Live WPM: <span id="live-wpm" class="highlight">0</span></div>
         </div>
 
         <input type="text" id="hidden-input" autofocus autocomplete="off" autocapitalize="none">
-
         <div id="words-wrapper"></div>
 
         <div id="results">
-            <h2>Resultados</h2>
+            <h2>Round Finished!</h2>
             <div class="results-grid">
                 <div>WPM: <span id="res-wpm" style="color: var(--main-color);">0</span></div>
                 <div>Accuracy: <span id="res-acc" style="color: var(--main-color);">0%</span></div>
@@ -166,14 +210,38 @@
     </div>
 
     <script>
-        // Library of 5 texts between 30 and 120 characters
-        const textLibrary = [
-            "The quick brown fox jumps over the lazy dog.",
-            "Code is like humor. When you have to explain it, it is bad.",
-            "Simplicity is the soul of efficiency.",
-            "Fix the cause, not the symptom.",
-            "Before software can be reusable it first has to be usable."
-        ];
+        // Divided Library Lists (30-120 Characters)
+        const difficultyLibraries = {
+            easy: [
+                "The quick brown fox jumps over the lazy dog.",
+                "Simplicity is the soul of efficiency.",
+                "Fix the cause, not the symptom.",
+                "Cats are small animals with soft fur.",
+                "The sun rises in the east and sets down."
+            ],
+            medium: [
+                "Code is like humor. When you have to explain it, it is bad.",
+                "Before software can be reusable it first has to be usable.",
+                "Continuous improvement is better than delayed perfection.",
+                "JavaScript is a versatile programming language for web apps.",
+                "Stay hungry. Stay foolish. Never look back."
+            ],
+            hard: [
+                "API requests initialized via AJAX workflows optimize real-time calculations.",
+                "Polymorphism & asynchronous closures challenge entry-level architecture.",
+                "Debugging architectural multithreading sync systems requires deep patience.",
+                "Refactoring complex object-oriented structural frameworks eliminates technical debt.",
+                "The system algorithm dynamically computed multi-layered cryptography parameters."
+            ]
+        };
+
+        let currentDifficulty = "easy";
+        let currentText = "";
+        let startTime = null;
+        let timerInterval = null;
+        let isTracking = false;
+        let totalErrors = 0;
+        let totalTyped = 0;
 
         const wordsWrapper = document.getElementById('words-wrapper');
         const hiddenInput = document.getElementById('hidden-input');
@@ -184,17 +252,33 @@
         const resAcc = document.getElementById('res-acc');
         const resTime = document.getElementById('res-time');
         const restartBtn = document.getElementById('restart-btn');
+        const pbDisplay = document.getElementById('pb-display');
+        const pbDiffLabel = document.getElementById('pb-diff-label');
 
-        let currentText = "";
-        let startTime = null;
-        let timerInterval = null;
-        let isTracking = false;
-        let totalErrors = 0;
-        let totalTyped = 0;
+        // High Score Processing System
+        function updateHighScoreDisplay() {
+            const savedPB = localStorage.getItem(`typerush_pb_${currentDifficulty}`) || 0;
+            pbDiffLabel.innerText = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+            pbDisplay.innerText = `${savedPB} WPM`;
+        }
 
-        // Initialize/Restart Game
+        function saveHighScore(finalWpm) {
+            const currentPB = parseInt(localStorage.getItem(`typerush_pb_${currentDifficulty}`)) || 0;
+            if (finalWpm > currentPB) {
+                localStorage.setItem(`typerush_pb_${currentDifficulty}`, finalWpm);
+                updateHighScoreDisplay();
+            }
+        }
+
+        function changeDifficulty(level) {
+            currentDifficulty = level;
+            document.querySelectorAll('.difficulty-container button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${level}`).classList.add('active');
+            updateHighScoreDisplay();
+            initGame();
+        }
+
         function initGame() {
-            // Reset States
             clearInterval(timerInterval);
             timerInterval = null;
             startTime = null;
@@ -209,76 +293,63 @@
             hiddenInput.value = "";
             hiddenInput.disabled = false;
 
-            // Pick random text
-            const randomIndex = Math.floor(Math.random() * textLibrary.length);
-            currentText = textLibrary[randomIndex];
+            const targetLib = difficultyLibraries[currentDifficulty];
+            const randomIndex = Math.floor(Math.random() * targetLib.length);
+            currentText = targetLib[randomIndex];
 
-            // Render text as individual character spans
             wordsWrapper.innerHTML = currentText.split('').map((char, index) => {
-                // Highlight the very first character with the caret
                 const currentClass = index === 0 ? 'char current' : 'char';
                 return `<span class="${currentClass}">${char}</span>`;
             }).join('');
 
-            // Focus hidden input so user can type instantly
             hiddenInput.focus();
         }
 
-        // Keep input focused when clicking on the game area
         window.addEventListener('click', () => hiddenInput.focus());
 
-        // Process Input
         hiddenInput.addEventListener('input', (e) => {
             const inputValue = hiddenInput.value;
             const inputLength = inputValue.length;
             const textSpans = wordsWrapper.querySelectorAll('.char');
 
-            // Start timer on first keystroke
             if (!isTracking && inputLength > 0) {
                 isTracking = true;
                 startTime = performance.now();
                 timerInterval = setInterval(updateStats, 100);
             }
 
-            totalTyped++; // Track raw keystrokes for accurate metrics
+            totalTyped++;
 
-            // Update character classes based on correct/incorrect inputs
             textSpans.forEach((span, index) => {
                 span.classList.remove('current', 'correct', 'incorrect');
 
                 if (index < inputLength) {
-                    // Character typed
                     if (inputValue[index] === currentText[index]) {
                         span.classList.add('correct');
                     } else {
                         span.classList.add('incorrect');
-                        // Track mistakes once per position loop to avoid bloat
                         if (index === inputLength - 1 && e.inputType !== "deleteContentBackward") {
                             totalErrors++;
                         }
                     }
                 }
 
-                // Apply caret to the next character to be typed
                 if (index === inputLength) {
                     span.classList.add('current');
                 }
             });
 
-            // Check if user finished the text
             if (inputLength >= currentText.length) {
                 endGame();
             }
         });
 
-        // Calculate and Update Real-time Statistics
         function updateStats() {
             if (!startTime) return;
             const currentTime = performance.now();
-            const timeElapsed = (currentTime - startTime) / 1000; // in seconds
+            const timeElapsed = (currentTime - startTime) / 1000;
             liveTimer.innerText = `${timeElapsed.toFixed(1)}s`;
 
-            // Standard WPM formula: (correct characters / 5) / time in minutes
             const correctChars = wordsWrapper.querySelectorAll('.char.correct').length;
             const minutes = timeElapsed / 60;
             if (minutes > 0) {
@@ -287,7 +358,6 @@
             }
         }
 
-        // End Game and Calculate Precision Stats
         function endGame() {
             clearInterval(timerInterval);
             hiddenInput.disabled = true;
@@ -297,19 +367,18 @@
             
             const correctChars = wordsWrapper.querySelectorAll('.char.correct').length;
             const finalWpm = Math.round((correctChars / 5) / (finalTimeSeconds / 60));
-
-            // Accuracy calculation based on net correct characters vs total length
             const accuracy = Math.max(0, Math.round((correctChars / currentText.length) * 100));
 
-            // Display Results
             wordsWrapper.style.display = "none";
             resWpm.innerText = finalWpm;
             resAcc.innerText = `${accuracy}%`;
             resTime.innerText = `${finalTimeSeconds}s`;
             resultsDiv.style.display = "block";
+
+            // Process and commit to database if it beats old high score
+            saveHighScore(finalWpm);
         }
 
-        // Restart buttons & shortcuts
         restartBtn.addEventListener('click', initGame);
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -317,7 +386,8 @@
             }
         });
 
-        // Start the game on initial load
+        // Initialize display and setup the base layout
+        updateHighScoreDisplay();
         initGame();
     </script>
 </body>
